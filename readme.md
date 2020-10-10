@@ -9,13 +9,14 @@ Otherwise you'd have to install [pygame](https://www.pygame.org) first.
 ### keys
 Once the game is up and running you can control by pressing:
 
+```
 a ---> kick or use a weapon (if you have one)
 s ---> switch weapon
 q ---> quit the game
 ← ---> go left
 → ---> go right
 ↑ ---> jump
-
+```
 ## license
 GPLv3
 
