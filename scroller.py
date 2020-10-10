@@ -41,7 +41,7 @@ def get_distance(bottom1,bottom2):
 
 class Player(pygame.sprite.Sprite):
 
-    frame = 48
+    frame = 4
     animcycle = 4
     images = []
     walk_right = []
@@ -60,6 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.images[0]
         self.rect = self.image.get_rect(center=(0,0))
 
+        self.frame = 0
         # Set a referance to the image rect.
 #        self.rect = self.image.get_rect()
 
@@ -78,7 +79,6 @@ class Player(pygame.sprite.Sprite):
 
         # Move left/right
         self.rect.x += self.change_x
-
 #        if self.change_x > 0:
 #            self.frame = self.frame - 1
 #            self.image = self.walk_right[self.frame//self.animcycle%3]
@@ -419,6 +419,85 @@ class Stats(pygame.sprite.Sprite):
             msg = "KP: %d | %d UP" %(LIFE,LIVES)
             self.image = self.font.render(msg, 0, self.color)
 
+class MenuItem(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(None, 50)
+        self.font.set_bold(0)
+        self.color = Color('white')
+        self.title = "menuitem"
+        self.update()
+
+    def update(self):
+        msg = "-> %s <-" % self.title
+        self.image = self.font.render(msg, 0, self.color)
+
+    def draw(self):
+        msg = "-> %s <-" % self.title
+        self.image = self.font.render(msg, 0, self.color)
+
+
+class HomeScreen():
+    def __init__(self):
+        self.name = "scroller.py"
+        self.item_list = pygame.sprite.Group()
+
+    def update(self):
+        self.item_list.update()
+
+    def draw(self, screen):
+        screen.fill(BLACK)
+        menu_items = ["Welcome to scroller.py...","Press a key to start the game","–––––––––––––––––––––––––––","KEYS:","a ––––––––––> kick or shoot","s ––––––––––> swap weapon","arrow left –––> go left","arrow right ––> go right","arrow up –––> jump", "q ––––––––––> quit the game"]
+        y = 300
+        for mitem in menu_items:
+            welcome_text = MenuItem()
+            font_30 = pygame.font.Font(None, 30)
+            welcome_text.image = font_30.render(mitem, 0, welcome_text.color)
+            welcome_text.rect = welcome_text.image.get_rect().move(340, y)
+            y += 35
+            self.item_list.add(welcome_text)
+        logo = ["SCROLLER.py","––––––––––"]
+        y = 100
+        for line in logo:
+            m = MenuItem()
+            font_140 = pygame.font.Font(None, 140)
+            font_mono = pygame.font.match_font('Monospace')
+            m.image = font_140.render(line, 0, m.color)
+            m.rect = m.image.get_rect().move(300,y)
+            y += 60
+            self.item_list.add(m)
+        self.item_list.draw(screen)
+
+class EndScreen():
+    def __init__(self):
+        self.item_list = pygame.sprite.Group()
+
+    def update(self):
+        self.item_list.update()
+
+    def draw(self, screen):
+        screen.fill(BLACK)
+        menu_items = ["THE END!","","COINS: %s" %SCORE,"HEALTH: %s" % LIFE,"LIVES LEFT: %s" % LIVES,"MONSTERS KILLED: %s" % KILLS,"–––––––––––––––","GAME OVER!","···················","Thanks for playing scroller.py", "https://github.com/undermink/scroller","-- press q to quit --"]
+
+        y = 300
+        for mitem in menu_items:
+            text = MenuItem()
+            font_30 = pygame.font.Font(None, 30)
+            text.image = font_30.render(mitem, 0, text.color)
+            text.rect = text.image.get_rect().move(340, y)
+            y += 35
+            self.item_list.add(text)
+        logo = ["THE END","––––––––"]
+        y = 100
+        for line in logo:
+            m = MenuItem()
+            font_140 = pygame.font.Font(None, 140)
+            m.image = font_140.render(line, 0, m.color)
+            m.rect = m.image.get_rect().move(330,y)
+            y += 60
+            self.item_list.add(m)
+        self.item_list.draw(screen)
+
 class Level():
     def __init__(self, player):
         self.platform_list = pygame.sprite.Group()
@@ -641,6 +720,7 @@ def main():
     screen = pygame.display.set_mode(size)
 
     pygame.display.set_caption("Side-scrolling Platformer")
+
     Player.images = [load_image('player_platform_1.gif'),
                      load_image('player_platform_2.gif'),
                      load_image('player_platform_2.gif'),
@@ -651,11 +731,14 @@ def main():
                      load_image('player_platform_4.gif'),
                      pygame.transform.flip(load_image('player_platform_4.gif'),1,0),
                      ]
-    Player.walk_right = [load_image('player_platform_2.gif'),
-                         load_image('player_platform_2.gif'),
-                         load_image('player_platform_walk.gif'),
-                         load_image('player_platform_walk.gif'),
-                     ]
+#    Player.walk_right = [load_image('player_platform_walk.gif'),
+#                         load_image('player_platform_walk_2.gif'),
+#                         load_image('player_platform_walk_3.gif'),
+#                         load_image('player_platform_walk_4.gif'),
+#                         load_image('player_platform_walk_3.gif'),
+#                         load_image('player_platform_walk_2.gif'),
+#                         load_image('player_platform_walk.gif'),
+#                     ]
 
     Player.walk_left = [pygame.transform.flip(load_image('player_platform_2.gif'),1,0),
                         pygame.transform.flip(load_image('player_platform_2.gif'),1,0),
@@ -812,6 +895,7 @@ def main():
                 active_sprite_list.update()
             else:
                 done = True
+                ending()
                 print("")
                 print("##########################")
                 print("#                        #")
@@ -819,7 +903,7 @@ def main():
                 print("#                        #")
                 print("#  COINS: %s             #" % SCORE)
                 print("#  HEALTH: %s            #" % LIFE)
-                print("#  LIVES LEFT: %s        #" % LIVES)
+                print("#  LIVES LEFT: %s         #" % LIVES)
                 print("#                        #")
                 print("#  MONSTERS KILLED: %s   #" % KILLS)
                 print("#                        #")
@@ -828,7 +912,8 @@ def main():
                 print("##########################")
                 print("")
                 print("--- thanks for playing the scroller.py ---")
-                print("                   :)")
+                print("")
+                print("https://github.com/undermink/scroller")
 
         # See if we are on the ground.
         if player.rect.y >= SCREEN_HEIGHT and player.change_y >= 0:
@@ -878,6 +963,7 @@ def main():
                 else:
                     player.kill()
                     done = True
+                    ending()
         for shot in player.shot_list:
             active_sprite_list.add(shot)
             shot_hit_list = pygame.sprite.spritecollide(shot, current_level.enemy_list, False)
@@ -925,5 +1011,56 @@ def main():
 
     pygame.quit()
 
+def starting():
+    pygame.init()
+
+    # Set the height and width of the screen
+    size = [SCREEN_WIDTH, SCREEN_HEIGHT]
+    screen = pygame.display.set_mode(size)
+
+    pygame.display.set_caption("Side-scrolling Platformer")
+    init = HomeScreen()
+    init.draw(screen)
+
+    done = False
+    clock = pygame.time.Clock()
+
+    while not done:
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                done = True
+
+        init.update()
+        clock.tick(60)
+        pygame.display.flip()
+
+    #pygame.quit()
+def ending():
+    pygame.init()
+
+    # Set the height and width of the screen
+    size = [SCREEN_WIDTH, SCREEN_HEIGHT]
+    screen = pygame.display.set_mode(size)
+
+    pygame.display.set_caption("Side-scrolling Platformer")
+    init = EndScreen()
+    init.draw(screen)
+
+    done = False
+    clock = pygame.time.Clock()
+
+    while not done:
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    done = True
+
+        init.update()
+        clock.tick(60)
+        pygame.display.flip()
+
 if __name__ == "__main__":
+    starting()
     main()
