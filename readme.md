@@ -12,6 +12,7 @@ Once the game is up and running you can control by pressing:
 ```
 a ---> kick or use a weapon (if you have one)
 s ---> switch weapon
+f ---> switch fullscreen / window mode
 q ---> quit the game
 ← ---> go left
 → ---> go right
