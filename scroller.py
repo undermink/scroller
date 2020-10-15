@@ -2,23 +2,25 @@
 
 import pygame, random, os
 from pygame.locals import *
-
+from level import Level, Level_01, Level_02, Level_03, Level_04, Platform, Gun
 # Global constants
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
+# stats
 SCORE = 0
 LIFE = 10
 LIVES = 3
 KILLS = 0
+
 # equipment
 GUN = False
+
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
-BLUE = (0, 0, 255)
 
 # Screen dimensions
 SCREEN_WIDTH = 1280
@@ -61,8 +63,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(0,0))
 
         self.frame = 0
-        # Set a referance to the image rect.
-#        self.rect = self.image.get_rect()
 
         # Set speed vector of player
         self.change_x = 0
@@ -88,7 +88,7 @@ class Player(pygame.sprite.Sprite):
 #        if self.frame == 0:
 #            frame = 48
 
-        # See if we hit anything
+        # See if we hit anything (left or right)
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
             # If we are moving right,
@@ -102,23 +102,19 @@ class Player(pygame.sprite.Sprite):
         # Move up/down
         self.rect.y += self.change_y
 
-        # Check and see if we hit anything
+        # Check and see if we hit anything (top or bottom)
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
-
             # Reset our position based on the top/bottom of the object.
             if self.change_y > 0:
                 self.rect.bottom = block.rect.top
             elif self.change_y < 0:
                 self.rect.top = block.rect.bottom
-
             # Stop our vertical movement
             self.change_y = 0
 
     def calc_grav(self):
         """ Calculate effect of gravity. """
-        global LIVES
-        global LIFE
         if self.change_y == 0:
             self.change_y = 1
         else:
@@ -128,7 +124,6 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self):
         """ Called when user hits 'jump' button. """
-
         # move down a bit and see if there is a platform below us.
         # Move down 2 pixels because it doesn't work well if we only move down 1
         # when working with a platform moving down.
@@ -216,40 +211,6 @@ class Player(pygame.sprite.Sprite):
 #                    if self.rect.bottom == monster.rect.bottom:
 #                        monster.kill()
 
-class Platform(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = self.images[0]
-        self.rect = self.image.get_rect()
-        self.cracks = None
-        self.damaged = False
-
-
-class Coin(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = self.images[0]
-        self.rect = self.image.get_rect()
-
-class Gun(pygame.sprite.Sprite):
-    type = 'gun'
-    def __init__(self):
-        super().__init__()
-        self.player = None
-        self.image = self.images[0]
-        self.rect = self.image.get_rect()
-
-    def update(self):
-        if self.player:
-            if self.player.facing == 0:
-                self.image = self.images[1]
-                self.rect.x = self.player.rect.x-35
-                self.rect.y = self.player.rect.y+85
-
-            else :
-                self.image = self.images[0]
-                self.rect.x = self.player.rect.x+35
-                self.rect.y = self.player.rect.y+85
 
 
 class Shot(pygame.sprite.Sprite):
@@ -266,94 +227,7 @@ class Shot(pygame.sprite.Sprite):
             self.rect.x -= 10
 
 
-class Heart(pygame.sprite.Sprite):
-    type = 'heart'
-    wait = 10
-    def __init__(self):
-        super().__init__()
-        self.image = self.images[0]
-        self.rect = self.image.get_rect()
 
-    def update(self):
-        if self.wait > 0:
-            self.wait -= 1
-        else:
-            self.wait = 10
-            if self.image == self.images[0]:
-                self.image = self.images[1]
-            else:
-                self.image = self.images[0]
-
-class Monster(pygame.sprite.Sprite):
-    images = []
-    change_x = -2
-    change_y = 0
-    wait = 10
-
-    def __init__(self):
-        super().__init__()
-        self.level = None
-
-        self.image = self.images[0]
-        self.rect = self.image.get_rect(center=(0,0))
-
-    def update(self):
-        self.calc_grav()
-        self.rect.move_ip(self.change_x,0)
-        #self.rect.x += self.change_x
-        # See if we hit anything
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-        for block in block_hit_list:
-            # If we are moving right,
-            # set our right side to the left side of the item we hit
-            if self.change_x > 0:
-                self.rect.right = block.rect.left
-                self.image = self.images[0]
-                self.change_x = -2
-            elif self.change_x < 0:
-                # Otherwise if we are moving left, do the opposite.
-                self.rect.left = block.rect.right
-                self.change_x = 2
-                self.image = self.images[1]
-
-        # Move up/down
-        self.rect.y += self.change_y
-
-        # Check and see if we hit anything
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-        for block in block_hit_list:
-
-            # Reset our position based on the top/bottom of the object.
-            if self.change_y > 0:
-                self.rect.bottom = block.rect.top
-            elif self.change_y < 0:
-                self.rect.top = block.rect.bottom
-
-            # Stop our vertical movement
-            self.change_y = 0
-
-    def attack(self):
-        if self.change_x > 0:
-            if self.image == self.images[5]:
-                self.image = self.images[1]
-            else:
-                self.image = self.images[5]
-        else:
-            if self.image == self.images[4]:
-                self.image = self.images[0]
-            else:
-                self.image = self.images[4]
-
-    def calc_grav(self):
-        """ Calculate effect of gravity. """
-        if self.change_y == 0:
-            self.change_y = 1
-        else:
-            self.change_y += .35
-
-        # See if we are on the ground.
-        if self.rect.y >= SCREEN_HEIGHT and self.change_y >= 0:
-            self.kill()
 
 class Explosion(pygame.sprite.Sprite):
     animcycle = 4
@@ -447,7 +321,7 @@ class HomeScreen():
 
     def draw(self, screen):
         screen.fill(BLACK)
-        menu_items = ["Welcome to scroller.py...","Press a key to start the game","–––––––––––––––––––––––––––","KEYS:","a ––––––––––> kick or shoot","s ––––––––––> swap weapon","arrow left –––> go left","arrow right ––> go right","arrow up –––> jump", "q ––––––––––> quit the game"]
+        menu_items = ["Welcome to scroller.py...","Press a key to start the game","–––––––––––––––––––––––––––","KEYS:","a ––––––––––> kick or shoot","s ––––––––––> swap weapon","arrow left –––> go left","arrow right ––> go right","arrow up –––> jump", "f –––––––––––> fullscreen/window mode", "q ––––––––––> quit the game"]
         y = 300
         for mitem in menu_items:
             welcome_text = MenuItem()
@@ -498,218 +372,6 @@ class EndScreen():
             self.item_list.add(m)
         self.item_list.draw(screen)
 
-class Level():
-    def __init__(self, player):
-        self.platform_list = pygame.sprite.Group()
-        self.enemy_list = pygame.sprite.Group()
-        self.coin_list = pygame.sprite.Group()
-        self.bonus_list = pygame.sprite.Group()
-        self.shot_list = pygame.sprite.Group()
-        self.cracks_list = pygame.sprite.Group()
-        self.player = player
-        self.startx = 40
-        self.starty = 0
-
-        # How far this world has been scrolled left/right
-        self.world_shift = 0
-
-    # Update everything in this level
-    def update(self):
-        """ Update everything in this level."""
-        self.platform_list.update()
-        self.enemy_list.update()
-        self.coin_list.update()
-        self.bonus_list.update()
-        self.shot_list.update()
-
-    def draw(self, screen):
-        """ Draw everything on this level. """
-
-        # Draw the background
-        screen.fill(BLUE)
-
-        # Draw all the sprite lists that we have
-        self.platform_list.draw(screen)
-        self.enemy_list.draw(screen)
-        self.coin_list.draw(screen)
-        self.shot_list.draw(screen)
-        self.bonus_list.draw(screen)
-
-    def shift_world(self, shift_x):
-        """ When the user moves left/right and we need to scroll
-        everything: """
-
-        # Keep track of the shift amount
-        self.world_shift += shift_x
-
-        # Go through all the sprite lists and shift
-        for platform in self.platform_list:
-            platform.rect.x += shift_x
-
-        for enemy in self.enemy_list:
-            enemy.rect.x += shift_x
-
-        for coin in self.coin_list:
-            coin.rect.x += shift_x
-
-        for bonus in self.bonus_list:
-            bonus.rect.x += shift_x
-
-        for shot in self.shot_list:
-            shot.rect.x += shift_x
-
-        for cracks in self.cracks_list:
-            cracks.rect.x += shift_x
-
-    def parse_level(self, level):
-        x = 0
-        y = 0
-        for platform in level.strip():
-            if platform == '#':
-                block = Platform()
-                block.rect.x = x
-                block.rect.y = y
-                block.image = random.choice(block.images[0:3])
-                block.player = self.player
-                self.platform_list.add(block)
-            if platform == '.':
-                pass
-            if platform == 'f':
-                gun = Gun()
-                gun.rect.x = x
-                gun.rect.y = y+15
-                self.type = 'gun'
-                self.bonus_list.add(gun)
-            if platform == 'x':
-                monster = Monster()
-                monster.rect.x = x
-                monster.rect.y = y
-                monster.level = self
-                self.enemy_list.add(monster)
-            if platform == 'o':
-                coin = Coin()
-                coin.rect.x = x+15
-                coin.rect.y = y+15
-                coin.level = self
-                self.coin_list.add(coin)
-            if platform == 'v':
-                heart = Heart()
-                heart.rect.x = x
-                heart.rect.y = y
-                heart.level = self
-                self.bonus_list.add(heart)
-            if platform == 'p':
-                self.startx = x
-                self.starty = y
-            if x < self.parser_limit:
-                x += 100
-            else:
-                x = 0
-                y += 100
-
-# Create platforms for the level
-class Level_01(Level):
-    """ Definition for level 1. """
-
-    def __init__(self, player):
-        """ Create level 1. """
-
-        # Call the parent constructor
-        Level.__init__(self, player)
-
-        self.level_limit = -3000
-        self.parser_limit = 4000
-        ground = """
-........................................
-........................................
-......................o.v.o.............
-..............x.............x...........
-..v.#..oo.....#...x..###.####...........
-..##....x....##.#.#.#......o..#....x....
-p.ooo.........#o..o.....................
-#......##...###......x..#.........##....
-########################################
-########################################
-"""
-        self.parse_level(ground.strip())
-
-class Level_02(Level):
-    """ Definition for level 2. """
-
-    def __init__(self, player):
-        """ Create level 1. """
-
-        # Call the parent constructor
-        Level.__init__(self, player)
-
-        self.level_limit = -2950
-        self.parser_limit = 4000
-
-        ground = """
-########################################
-#......................................#
-#oo...v.........oo.............o.......#
-#....x.........x..x..........#..x......#
-#....###.......####x.........####......#
-#p..#....x.#..#.oo.#...#...........#...#
-#..#ovo................................#
-#.#......#.........f#....#....x..#...###
-########################################
-########################################
-"""
-        self.parse_level(ground.strip())
-
-class Level_03(Level):
-    """ Definition for level 3. """
-
-    def __init__(self, player):
-        """ Create level 3. """
-
-        # Call the parent constructor
-        Level.__init__(self, player)
-
-        self.level_limit = -3000
-        self.parser_limit = 4000
-
-        ground = """
-........................................
-.p......................................
-###...v.........oo.....o.......v........
-.....x.........x..x....o.....#..x#......
-....####.......####x...o..#..#####......
-....#......####....#...#.......ooo.#....
-..####................ooo...............
-..#.fv.o##..........######....####...###
-..##...x.#..................oo..........
-..########.................####.........
-"""
-        self.parse_level(ground.strip())
-
-class Level_04(Level):
-    """ Definition for level 4. """
-
-    def __init__(self, player):
-        """ Create level 4. """
-
-        # Call the parent constructor
-        Level.__init__(self, player)
-
-        self.level_limit = -3000
-        self.parser_limit = 4000
-
-        ground = """
-........v...............................
-#.o..o..o..o..o..o..................ovo.
-##x..x..#..xf.#......o.............#.x.#
-##############...#...#.............#####
-.........................x.....#####....
-..p....................x.###............
-..#...x.....x.........###...............
-#..................###.......o....o.....
-##....#.....#....##.....................
-############.####............#....#....#
-"""
-        self.parse_level(ground.strip())
 
 def main():
     """ Main Program """
@@ -717,6 +379,8 @@ def main():
 
     # Set the height and width of the screen
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
+    winstyle = 0
+    bestdepth = pygame.display.mode_ok(size, winstyle, 32)
     screen = pygame.display.set_mode(size)
 
     pygame.display.set_caption("Side-scrolling Platformer")
@@ -745,24 +409,6 @@ def main():
                         pygame.transform.flip(load_image('player_platform_walk.gif'),1,0),
                         pygame.transform.flip(load_image('player_platform_walk.gif'),1,0),
                         ]
-    Platform.images = [load_image('stone_1.gif'),
-                       load_image('stone_1a.gif'),
-                       load_image('stone_1b.gif'),
-                       load_image('stone_2.gif'),
-                       load_image('cracks_1.gif'),
-                       ]
-    Monster.images = [load_image('monster_platform_1.gif'),
-                      pygame.transform.flip(load_image('monster_platform_1.gif'),1, 0),
-                      load_image('monster_platform_2.gif'),
-                      pygame.transform.flip(load_image('monster_platform_2.gif'),1, 0),
-                      load_image('monster_platform_3.gif'),
-                      pygame.transform.flip(load_image('monster_platform_3.gif'),1, 0),
-                      ]
-    Coin.images = [load_image('coin.gif')]
-    Heart.images = [load_image('heart_1.gif'),
-                    load_image('heart_1a.gif')]
-    Gun.images = [load_image('gun_1.gif'),
-                  pygame.transform.flip(load_image('gun_1.gif'),1, 0)]
     Shot.images = [load_image('shot.gif')]
     Explosion.images = [load_image('boom_1c.gif'),
         load_image('boom_1b.gif'),
@@ -813,7 +459,7 @@ def main():
 
     # Loop until the user clicks the close button.
     done = False
-
+    fullscreen = False
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
 
@@ -824,6 +470,29 @@ def main():
                 done = True
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_f:
+                    if not fullscreen:
+                        print("Changing to FULLSCREEN")
+                        screen_backup = screen.copy()
+                        screen = pygame.display.set_mode(
+                            size,
+                            winstyle | FULLSCREEN,
+                            bestdepth
+                        )
+                        screen.blit(screen_backup, (0, 0))
+                    else:
+                        print("Changing to windowed mode")
+                        screen_backup = screen.copy()
+                        screen = pygame.display.set_mode(
+                            size,
+                            winstyle,
+                            bestdepth
+                        )
+                        screen.blit(screen_backup, (0, 0))
+                    # screen.fill((255, 0, 0))
+                    pygame.display.flip()
+                    fullscreen = not fullscreen
+
                 if event.key == pygame.K_LEFT:
                     player.go_left()
                 if event.key == pygame.K_RIGHT:
