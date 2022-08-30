@@ -2,6 +2,11 @@
 This is a simple sidescrolling platformer I just wrote to relax after work. (And I mean relaxing by writing it not playing...)
 I drew most of the images on paper then digitalized them, but I made most of the animation with GIMP only... no digital pens or a mouse - just my t460s with it's trackpoint :D, hehe
 
+## screenshots
+
+[the startup screen](./screenshot_01.jpg)
+[level 01](./screenshot_02.jpg)
+
 ## usage
 If you have pygame installed you can just run the `scroller.py` without any arguments...
 Otherwise you'd have to install [pygame](https://www.pygame.org) first.
