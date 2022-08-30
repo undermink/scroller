@@ -4,8 +4,8 @@ I drew most of the images on paper then digitalized them, but I made most of the
 
 ## screenshots
 
-[the startup screen](./screenshot_01.jpg)
-[level 01](./screenshot_02.jpg)
+![the startup screen](./screenshot_01.jpg)
+![level 01](./screenshot_02.jpg)
 
 ## usage
 If you have pygame installed you can just run the `scroller.py` without any arguments...
